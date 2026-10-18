@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Verificador docente · Laboratorio de Nomenclatura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<style>
+textarea{width:100%;min-height:180px;font-family:var(--f-mono);font-size:.95rem;border:1.5px solid var(--line);border-radius:12px;padding:12px;background:var(--paper);color:var(--ink)}
+table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.95rem}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+td.mono{font-family:var(--f-mono)}
+.ok{color:var(--ok);font-weight:700}.no{color:var(--bad);font-weight:700}
+.tbl-wrap{overflow-x:auto}
+</style>
+</head>
+<body>
+<div class="wrap" style="max-width:960px">
+  <div class="toplinks" style="margin-top:8px">
+    <div class="brand">Verificador docente · Laboratorio de Nomenclatura</div>
+    <a class="btn small ghost" href="ranking.html">🏆 Ranking</a>
+  </div>
+
+  <section class="panel" style="margin-top:16px">
+    <h2>1 · Validar códigos de evidencia</h2>
+    <p class="muted">Pega una línea por estudiante con su <b>matrícula</b> y su <b>código</b> (en cualquier orden; sirve copiar columnas de Excel o de Blackboard). La validación se hace aquí mismo, sin conexión.</p>
+    <textarea id="in" placeholder="26E0123	NOM-AH8S-00D8-YGZCJ&#10;26E0456, NOM-....-....-....."></textarea>
+    <div class="btn-row" style="justify-content:flex-start">
+      <button class="btn primary" id="go">Validar</button>
+      <button class="btn" id="csv" disabled>⬇ Descargar CSV</button>
+    </div>
+    <div class="tbl-wrap"><table id="out" class="hidden"><thead><tr><th>Matrícula</th><th>Código</th><th>Válido</th><th>Puntaje</th><th>Aprov.</th><th>Tiempo</th><th>Fecha</th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <section class="panel" style="margin-top:16px">
+    <h2>2 · Descargar todos los resultados del servidor</h2>
+    <p class="muted">Incluye nombre completo, matrícula, mejor puntaje, desglose por nivel e intentos. Requiere tu clave docente.</p>
+    <div class="grid2">
+      <div class="field"><label for="k">Clave docente</label><input id="k" type="password" autocomplete="current-password"></div>
+      <div class="field"><label for="g">Grupo (vacío = todos)</label><input id="g" placeholder="BIO-101"></div>
+    </div>
+    <button class="btn primary" id="dl">⬇ Descargar CSV del servidor</button>
+    <p class="err" id="dl-err"></p>
+  </section>
+  <p class="muted" style="font-size:.85rem;margin-top:18px">El código (NOM-XXXX-XXXX-XXXXX) contiene puntaje, aprovechamiento, tiempo y fecha, firmados con la matrícula del estudiante: si cambia un carácter o la matrícula no coincide, la firma falla.</p>
+</div>
+<script src="js/shared.js"></script>
+<script>
+(function(){
+  const $=s=>document.querySelector(s); let rows=[];
+  $('#go').onclick=async()=>{
+    rows=[];
+    const lines=$('#in').value.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+    for(const l of lines){
+      const m=l.toUpperCase().match(/NOM[\s-]*[0-9A-Z]{4}[\s-]*[0-9A-Z]{4}[\s-]*[0-9A-Z]{5}/);
+      if(!m){rows.push({mat:l,code:'—',ok:false,motivo:'No se encontró un código NOM-…'});continue;}
+      const rest=l.toUpperCase().replace(m[0],' ').split(/[\s,;\t]+/).map(LAB.normMat).filter(x=>x.length>=4);
+      const mat=rest[0]||'';
+      const r=await LAB.readCode(m[0],mat);
+      rows.push({mat,code:m[0].replace(/\s/g,''),...r});
+    }
+    const tb=$('#out tbody');
+    tb.innerHTML=rows.map(r=>`<tr><td class="mono">${LAB.esc(r.mat)}</td><td class="mono">${LAB.esc(r.code)}</td><td class="${r.ok?'ok':'no'}">${r.ok?'✔ válido':'✘ '+LAB.esc(r.motivo||'')}</td><td class="mono">${r.ok?r.score:''}</td><td class="mono">${r.ok?r.pct+'%':''}</td><td class="mono">${r.ok?LAB.fmtTime(r.time):''}</td><td>${r.ok?r.date.toISOString().slice(0,10):''}</td></tr>`).join('');
+    $('#out').classList.remove('hidden'); $('#csv').disabled=!rows.length;
+  };
+  $('#csv').onclick=()=>{
+    const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;
+    const csv='﻿'+['matricula','codigo','valido','puntaje','aprovechamiento_pct','tiempo_s','fecha'].join(',')+'\n'+
+      rows.map(r=>[r.mat,r.code,r.ok?'SI':'NO',r.ok?r.score:'',r.ok?r.pct:'',r.ok?r.time:'',r.ok?r.date.toISOString().slice(0,10):''].map(q).join(',')).join('\n');
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='verificacion_codigos.csv';a.click();
+  };
+  $('#dl').onclick=async()=>{
+    $('#dl-err').textContent='';
+    const u='/api/export?key='+encodeURIComponent($('#k').value)+($('#g').value.trim()?'&grupo='+encodeURIComponent($('#g').value.trim()):'');
+    try{
+      const r=await fetch(u,{cache:'no-store'});
+      if(r.status===401) return $('#dl-err').textContent='Clave incorrecta.';
+      if(!r.ok) throw new Error(r.status);
+      const a=document.createElement('a');a.href=URL.createObjectURL(await r.blob());a.download='ranking_nomenclatura.csv';a.click();
+    }catch(e){$('#dl-err').textContent='No se pudo descargar ('+e.message+').';}
+  };
+})();
+</script>
+</body>
+</html>

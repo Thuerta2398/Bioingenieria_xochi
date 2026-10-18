@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ranking · Expedición Nomenclatura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;700;800;900&family=JetBrains+Mono:wght@500;700&family=Unbounded:wght@600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/exp.css">
+<style>
+.rk{display:grid;gap:10px;margin-top:14px;padding:0;list-style:none}
+.rk li{display:grid;grid-template-columns:70px 1fr auto auto;gap:16px;align-items:center;background:linear-gradient(90deg,var(--panel),var(--night-2));border:1px solid var(--line);border-radius:18px;padding:12px 18px}
+.rk li.new{animation:flash 1.6s}@keyframes flash{0%{background:rgba(245,184,61,.35)}}
+.rk .pos{font-family:var(--f-display);font-size:2rem;font-weight:800;text-align:center}
+.rk li:nth-child(1){border-color:var(--amber)}.rk li:nth-child(1) .pos{color:var(--amber)}.rk li:nth-child(2) .pos{color:#C9CED6}.rk li:nth-child(3) .pos{color:#D08A57}
+.rk .nm{font-size:clamp(1.15rem,2.4vw,1.7rem);font-weight:800}.rk .nm small{font-family:var(--f-mono);font-size:.75rem;color:var(--ink-3);margin-left:6px}
+.rk .w{font-size:1rem;letter-spacing:1px}.rk .sc{font-family:var(--f-mono);font-size:clamp(1.3rem,2.6vw,2rem);font-weight:700;color:var(--amber);text-align:right}
+.live i{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--mint);margin-right:6px;animation:pulse 1.8s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 10px rgba(61,220,151,0)}0%{box-shadow:0 0 0 0 rgba(61,220,151,.6)}}
+select{background:var(--panel);color:var(--ink);border:1px solid var(--line-2);border-radius:12px;padding:.5em .8em;min-height:42px}
+@media(max-width:700px){.rk li{grid-template-columns:44px 1fr auto}.rk .w{display:none}}
+</style></head>
+<body><div class="wrap">
+<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-top:10px">
+  <div><span class="ver">★ Expedición Nomenclatura 2.0</span><h1 style="font-size:clamp(1.8rem,5vw,3.2rem);margin-top:10px">Ranking <span id="gt" style="color:var(--wine-2)">—</span></h1></div>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="live mono dim" id="lv"><i></i>en vivo</span><select id="sel" aria-label="Grupo"></select><button class="b sm line" id="fs">⛶</button></div>
+</div>
+<div class="kpis" style="max-width:720px"><div class="kpi"><small>Participantes</small><b id="kn">0</b></div><div class="kpi"><small>Expedición completa</small><b id="kc">0</b></div><div class="kpi"><small>Aprov. promedio</small><b id="kp">0%</b></div><div class="kpi"><small>Mundos</small><b>7</b></div></div>
+<ol class="rk" id="list"></ol>
+<p class="dim" style="font-size:.9rem;margin-top:18px">Top 10 · se actualiza cada 5 s · desempate: más mundos superados · <a href="./" id="lp" style="color:var(--ink-2)">Jugar →</a> · <a href="v1/ranking.html" style="color:var(--ink-3)">Ranking v1</a></p>
+</div>
+<script src="js/shared.js"></script>
+<script>
+(function(){const $=s=>document.querySelector(s),p=new URLSearchParams(location.search);let g=p.get('grupo')?LAB.normGrupo(p.get('grupo')):'',prev={};
+$('#fs').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{});
+async function groups(){try{const j=await(await fetch('/api/v2/ranking',{cache:'no-store'})).json();const gs=j.grupos||[];if(g&&!gs.find(x=>x.grupo===g))gs.unshift({grupo:g,participantes:0});if(!g&&gs.length)g=gs.sort((a,b)=>b.participantes-a.participantes)[0].grupo;
+$('#sel').innerHTML=gs.map(x=>`<option value="${LAB.esc(x.grupo)}" ${x.grupo===g?'selected':''}>${LAB.esc(x.grupo)} (${x.participantes})</option>`).join('')||'<option>Sin grupos aún</option>';}catch(e){}}
+$('#sel').onchange=e=>{g=e.target.value;prev={};history.replaceState(null,'','?grupo='+encodeURIComponent(g));tick();};
+async function tick(){if(!g){$('#list').innerHTML='<div class="card center muted">Aún no hay exploradores registrados.</div>';return;}
+$('#gt').textContent=g;$('#lp').href='./?grupo='+encodeURIComponent(g);
+try{const j=await(await fetch('/api/v2/ranking?grupo='+encodeURIComponent(g),{cache:'no-store'})).json();
+$('#lv').innerHTML='<i></i>en vivo · '+new Date().toLocaleTimeString('es-MX');$('#kn').textContent=j.participantes;$('#kc').textContent=j.completos;$('#kp').textContent=j.promedio+'%';
+if(!j.top.length){$('#list').innerHTML='<div class="card center muted">Nadie ha enviado su informe todavía en este grupo.</div>';return;}
+const md=['🥇','🥈','🥉'];$('#list').innerHTML=j.top.map(r=>{const k=r.nombre+r.id,ch=Object.keys(prev).length&&prev[k]!==r.score;return `<li class="${ch?'new':''}"><div class="pos">${md[r.pos-1]||r.pos}</div><div class="nm">${LAB.esc(r.nombre)}<small>…${LAB.esc(r.id)}</small></div><div class="w" title="Mundos superados">${'🏝️'.repeat(0)}${'●'.repeat(r.worlds)}<span class="dim">${'○'.repeat(7-r.worlds)}</span></div><div class="sc">${r.score}</div></li>`}).join('');
+prev={};j.top.forEach(r=>prev[r.nombre+r.id]=r.score);}catch(e){$('#lv').textContent='reconectando…';}}
+groups().then(tick);setInterval(tick,5000);setInterval(groups,30000);})();
+</script></body></html>

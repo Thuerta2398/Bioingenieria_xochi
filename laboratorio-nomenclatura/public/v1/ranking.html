@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ranking · Laboratorio de Nomenclatura</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%237B1E3A'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle'%3E🏆%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#2A0A15;--bg2:#3D0F20;--ink:#FFF6F8;--ink2:#D9B3C0;--line:rgba(255,255,255,.12);--gold:#E8B95A;--silver:#C9CED6;--bronze:#D08A57;--accent:#F08FAE}
+:root[data-theme="light"]{--bg:#F7F3EC;--bg2:#FFFDF9;--ink:#1E1A1B;--ink2:#5B5357;--line:#E4DCD2;--gold:#B7832A;--silver:#7D8590;--bronze:#A9653A;--accent:#7B1E3A}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(1200px 600px at 80% -10%,var(--bg2),var(--bg));color:var(--ink);font-family:'Atkinson Hyperlegible',system-ui,sans-serif}
+.wrap{max-width:1200px;margin:0 auto;padding:16px clamp(16px,3vw,40px)}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;padding-top:12px}
+.kicker{font-family:'IBM Plex Mono',monospace;letter-spacing:.14em;text-transform:uppercase;font-size:.8rem;color:var(--ink2)}
+h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(2rem,5vw,3.6rem);margin:.1em 0 0;line-height:1}
+h1 span{color:var(--accent)}
+.ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+select,button{font:inherit;color:var(--ink);background:transparent;border:1.5px solid var(--line);border-radius:999px;padding:.5em 1em;min-height:42px}
+select option{color:#1E1A1B}
+.live{display:inline-flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:.85rem;color:var(--ink2)}
+.live i{width:10px;height:10px;border-radius:50%;background:#4ADE80;box-shadow:0 0 0 0 rgba(74,222,128,.7);animation:pulse 1.8s infinite}
+.live.off i{background:#F87171;animation:none}
+@keyframes pulse{70%{box-shadow:0 0 0 10px rgba(74,222,128,0)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}}
+.stats{display:flex;gap:28px;margin:18px 0 8px;flex-wrap:wrap}
+.stats div{font-family:'IBM Plex Mono',monospace}.stats b{font-size:1.8rem;display:block;color:var(--ink)}
+.stats small{color:var(--ink2);letter-spacing:.1em;text-transform:uppercase;font-size:.72rem}
+ol{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:10px}
+li{display:grid;grid-template-columns:72px 1fr auto auto auto;gap:18px;align-items:center;background:rgba(255,255,255,.05);border:1px solid var(--line);
+  border-radius:16px;padding:12px 20px;transition:transform .5s cubic-bezier(.2,.8,.2,1),background .4s}
+:root[data-theme="light"] li{background:#fff}
+li.new{animation:flash 1.6s ease}
+@keyframes flash{0%{background:rgba(232,185,90,.45)}}
+.pos{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:2.2rem;text-align:center}
+li:nth-child(1) .pos{color:var(--gold)}li:nth-child(2) .pos{color:var(--silver)}li:nth-child(3) .pos{color:var(--bronze)}
+li:nth-child(-n+3){padding:18px 20px}
+li:nth-child(1){border-color:var(--gold)}
+.nm{font-size:clamp(1.2rem,2.4vw,1.8rem);font-weight:700}
+.nm small{font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--ink2);margin-left:8px;font-weight:500}
+.sc{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:clamp(1.4rem,2.8vw,2.2rem);color:var(--accent);text-align:right}
+.mt{font-family:'IBM Plex Mono',monospace;color:var(--ink2);text-align:right;min-width:70px}
+.empty{padding:60px 20px;text-align:center;color:var(--ink2);border:1.5px dashed var(--line);border-radius:18px;font-size:1.2rem}
+footer{margin:26px 0 10px;color:var(--ink2);font-size:.9rem;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+footer a{color:var(--ink2)}
+@media (max-width:700px){li{grid-template-columns:48px 1fr auto;gap:10px;padding:10px 12px}.mt{display:none}.pos{font-size:1.6rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="kicker">Laboratorio de Nomenclatura · CEUX</div>
+      <h1>Ranking <span id="g-title">—</span></h1>
+    </div>
+    <div class="ctl">
+      <span class="live" id="live"><i></i><span id="live-t">en vivo</span></span>
+      <select id="sel" aria-label="Grupo"></select>
+      <button id="theme" title="Cambiar tema">◐</button>
+      <button id="fs" title="Pantalla completa">⛶</button>
+    </div>
+  </header>
+  <div class="stats">
+    <div><small>Participantes</small><b id="st-n">0</b></div>
+    <div><small>Aprovechamiento promedio</small><b id="st-p">0%</b></div>
+    <div><small>Máximo posible</small><b>2600</b></div>
+  </div>
+  <ol id="list"></ol>
+  <footer><span>Top 10 · se actualiza cada 5 s · desempate por menor tiempo</span><a href="./" id="lnk-play">Jugar el reto →</a></footer>
+</div>
+<script src="js/shared.js"></script>
+<script>
+(function(){
+  const $=s=>document.querySelector(s);
+  const p=new URLSearchParams(location.search);
+  let grupo=p.get('grupo')?LAB.normGrupo(p.get('grupo')):'';
+  let prev={};
+  try{const t=localStorage.getItem('labnom-rank-theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}
+  $('#theme').onclick=()=>{const r=document.documentElement;r.dataset.theme=r.dataset.theme==='light'?'dark':'light';try{localStorage.setItem('labnom-rank-theme',r.dataset.theme)}catch(e){}};
+  $('#fs').onclick=()=>{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})};
+  async function loadGroups(){
+    try{
+      const j=await (await fetch('/api/ranking',{cache:'no-store'})).json();
+      const gs=j.grupos||[];
+      if(grupo && !gs.find(g=>g.grupo===grupo)) gs.unshift({grupo,participantes:0});
+      if(!grupo && gs.length) grupo=gs.sort((a,b)=>b.participantes-a.participantes)[0].grupo;
+      $('#sel').innerHTML=gs.map(g=>`<option value="${LAB.esc(g.grupo)}" ${g.grupo===grupo?'selected':''}>${LAB.esc(g.grupo)} (${g.participantes})</option>`).join('')||'<option>Sin grupos aún</option>';
+    }catch(e){}
+  }
+  $('#sel').onchange=e=>{grupo=e.target.value;prev={};history.replaceState(null,'','?grupo='+encodeURIComponent(grupo));tick();};
+  async function tick(){
+    if(!grupo){$('#list').innerHTML='<div class="empty">Aún no hay resultados. Cuando alguien termine el reto aparecerá aquí.</div>';return;}
+    $('#g-title').textContent=grupo; $('#lnk-play').href='./?grupo='+encodeURIComponent(grupo);
+    try{
+      const j=await (await fetch('/api/ranking?grupo='+encodeURIComponent(grupo),{cache:'no-store'})).json();
+      $('#live').classList.remove('off'); $('#live-t').textContent='en vivo · '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      $('#st-n').textContent=j.participantes; $('#st-p').textContent=j.promedio+'%';
+      if(!j.top.length){$('#list').innerHTML='<div class="empty">Aún no hay resultados en este grupo. ¡El primero en terminar inaugura el podio!</div>';return;}
+      const medal=['🥇','🥈','🥉'];
+      $('#list').innerHTML=j.top.map(r=>{
+        const k=r.nombre+r.id, changed=prev[k]!==undefined&&prev[k]!==r.score||prev[k]===undefined&&Object.keys(prev).length;
+        return `<li class="${changed?'new':''}"><div class="pos">${medal[r.pos-1]||r.pos}</div><div class="nm">${LAB.esc(r.nombre)}<small>…${LAB.esc(r.id)}</small></div><div class="mt">${r.pct}%</div><div class="mt">${LAB.fmtTime(r.time)}</div><div class="sc">${r.score}</div></li>`;
+      }).join('');
+      prev={};j.top.forEach(r=>prev[r.nombre+r.id]=r.score);
+    }catch(e){$('#live').classList.add('off');$('#live-t').textContent='reconectando…';}
+  }
+  loadGroups().then(tick);
+  setInterval(tick,5000); setInterval(loadGroups,30000);
+})();
+</script>
+</body>
+</html>

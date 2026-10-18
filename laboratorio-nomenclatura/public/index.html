@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Expedición Nomenclatura 2.0</title>
+<meta name="description" content="Expedición Nomenclatura 2.0: siete mundos de nomenclatura inorgánica (sistemática, Stock y tradicional). Composición de la Materia · CEUX Ensenada.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23120B16'/%3E%3Cpath d='M32 8 54 20v24L32 56 10 44V20z' fill='none' stroke='%23F5B83D' stroke-width='4'/%3E%3Ctext x='32' y='40' font-size='20' font-family='Arial' font-weight='900' fill='%23E25A82' text-anchor='middle'%3EN2%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;700;800;900&family=JetBrains+Mono:wght@500;700&family=Unbounded:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/exp.css">
+</head>
+<body>
+
+<!-- ===== PORTADA ===== -->
+<section id="s-title" class="screen on">
+  <div class="wrap title-wrap">
+    <div>
+      <span class="ver">★ Versión 2.0 · 7 mundos</span>
+      <h1 class="logo">Expedición<span>Nomenclatura</span></h1>
+      <p class="tag">Recorre siete mundos, del símbolo al ácido más difícil. Cada mundo abre con un repaso y se desbloquea el siguiente cuando superas el 70&nbsp;%. Ahora con nomenclatura tradicional, respuestas abiertas y teclado de fórmulas.</p>
+      <div class="feats"><span>🔤 Respuestas abiertas</span><span>⌨️ Teclado de fórmulas</span><span>🏛️ Tradicional · Stock · Sistemática</span><span>⭐ Estrellas por mundo</span><span>🏆 Ranking en vivo</span></div>
+      <p class="dim" style="margin-top:18px;font-size:.9rem">¿Buscas la versión anterior? <a href="v1/" style="color:var(--ink-2)">Laboratorio de Nomenclatura 1.0</a></p>
+    </div>
+    <form class="card" id="f-reg" autocomplete="off">
+      <h2>Bitácora del explorador</h2>
+      <div class="field"><label for="r-nombre">Nombre completo</label><input id="r-nombre" maxlength="60" placeholder="Nombre y apellidos" required></div>
+      <div class="field"><label for="r-mat">Matrícula</label><input id="r-mat" maxlength="20" placeholder="Ej. 26E0123" autocapitalize="characters" required></div>
+      <div class="field"><label for="r-grupo">Grupo</label><input id="r-grupo" maxlength="24" placeholder="Ej. BIO-101" autocapitalize="characters" required></div>
+      <p class="err" id="r-err"></p>
+      <button class="b go" style="width:100%" type="submit" id="r-go">Comenzar expedición ▶</button>
+      <p class="rules"><b>Reglas de integridad:</b> el juego registra cuántas veces sales de la ventana y los intentos de pegar o copiar texto. A partir del 5.º evento de cada tipo se descuentan 50&nbsp;puntos por evento. Todo queda en tu informe final. Tu avance se guarda en este navegador.</p>
+    </form>
+  </div>
+</section>
+
+<!-- ===== BARRA SUPERIOR (mapa / juego) ===== -->
+<header class="topbar hidden" id="topbar">
+  <div class="wrap">
+    <div class="who" id="tb-who"></div>
+    <div class="prog"><div class="lbl"><span id="tb-lbl">Mundos 0/7</span><span id="tb-pct">0%</span></div><div class="bar"><i id="tb-bar" style="width:0"></i></div></div>
+    <div class="chips">
+      <span class="chip pts">⭐ <b id="tb-pts">0</b></span>
+      <span class="chip" id="tb-out" title="Salidas de la ventana">↗ <b>0</b></span>
+      <span class="chip" id="tb-paste" title="Intentos de pegar">📋 <b>0</b></span>
+    </div>
+    <button class="b sm line" id="tb-help">💡 Atajos</button>
+  </div>
+</header>
+
+<!-- ===== MAPA ===== -->
+<section id="s-map" class="screen">
+  <div class="wrap">
+    <div class="map-wrap">
+      <div class="map" id="map"></div>
+      <div class="card world-card" id="wcard"></div>
+    </div>
+    <div class="legend"><span>🔒 bloqueado</span><span>● disponible</span><span>⭐ 70 % · ⭐⭐ 85 % · ⭐⭐⭐ 95 %</span>
+      <a href="#" id="lnk-report" style="color:var(--amber);margin-left:auto">📄 Generar informe / constancia</a>
+      <a href="ranking.html" id="lnk-rank" style="color:var(--ink-2)">🏆 Ranking</a></div>
+  </div>
+</section>
+
+<!-- ===== REPASO ===== -->
+<section id="s-brief" class="screen"><div class="wrap brief"><div class="card" id="brief"></div></div></section>
+
+<!-- ===== JUEGO ===== -->
+<section id="s-play" class="screen">
+  <div class="wrap">
+    <div class="hud2"><span class="wname" id="p-w"></span><div class="seg" id="p-seg"></div><span class="chip pts">+<b id="p-pts">0</b></span><button class="b sm line" id="p-quit">Mapa</button></div>
+    <div class="stage noselect" id="stage"></div>
+  </div>
+</section>
+
+<!-- ===== RESULTADO DE MUNDO ===== -->
+<section id="s-res" class="screen"><div class="wrap center" style="max-width:640px;padding-top:30px" id="res"></div></section>
+
+<!-- ===== INFORME ===== -->
+<section id="s-rep" class="screen"><div class="wrap" style="max-width:900px" id="rep"></div></section>
+
+<div class="modal" id="m-help" role="dialog" aria-modal="true"><div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><h2>Atajos</h2><button class="b sm line" id="m-close">Cerrar ✕</button></div><div class="tabs" id="m-tabs"></div><div id="m-body"></div></div></div>
+
+<script src="js/banco2.js"></script>
+<script src="js/shared.js"></script>
+<script src="js/atajos.js"></script>
+<script src="js/mundos.js"></script>
+<script src="js/exp.js"></script>
+</body>
+</html>

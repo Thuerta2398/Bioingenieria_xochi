@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Verificador docente · Nomenclatura</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;700;800&family=JetBrains+Mono:wght@500;700&family=Unbounded:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/exp.css">
+<style>textarea{width:100%;min-height:170px;background:var(--night);color:var(--ink);border:1.5px solid var(--line-2);border-radius:12px;padding:12px;font-family:var(--f-mono)}
+table{width:100%;border-collapse:collapse;font-size:.88rem;margin-top:12px}td,th{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3)}
+.y{color:var(--mint);font-weight:700}.n{color:var(--coral);font-weight:700}.w{color:var(--coral)}</style></head>
+<body><div class="wrap" style="max-width:1100px">
+<h1 style="font-size:1.6rem;margin:14px 0">Verificador docente</h1>
+<div class="card"><h2>1 · Validar códigos (v1 NOM-… y v2 N2-…)</h2>
+<p class="muted">Una línea por estudiante: matrícula y código, en cualquier orden. Se valida aquí mismo.</p>
+<textarea id="in" placeholder="26E0123	N2-XXXXX-XXXXX-XXXXX-XXXXXX"></textarea>
+<div class="next" style="justify-content:flex-start"><button class="b go" id="go">Validar</button><button class="b" id="csv" disabled>⬇ CSV</button></div>
+<div style="overflow-x:auto"><table id="out" class="hidden"><thead><tr><th>Matrícula</th><th>Versión</th><th>Válido</th><th>Puntaje</th><th>Aprov.</th><th>Mundos</th><th>Tiempo</th><th>Salidas</th><th>T. fuera</th><th>Pegar</th><th>Copiar</th><th>Fecha</th></tr></thead><tbody></tbody></table></div></div>
+<div class="card" style="margin-top:14px"><h2>2 · Descargar resultados del servidor</h2>
+<div class="split"><div class="field"><label for="k">Clave docente</label><input id="k" type="password"></div><div class="field"><label for="g">Grupo (vacío = todos)</label><input id="g" placeholder="BIO-101"></div></div>
+<div class="next" style="justify-content:flex-start"><button class="b gold" id="d2">⬇ CSV Expedición 2.0</button><button class="b line" id="d1">⬇ CSV Laboratorio 1.0</button></div><p class="err" id="de"></p></div>
+<p class="dim" style="font-size:.85rem">En v2 los eventos de integridad (salidas y pegados) a partir del 5.º descuentan 50 pts c/u; ya están aplicados en el puntaje del código.</p>
+</div>
+<script src="js/shared.js"></script>
+<script>(function(){const $=s=>document.querySelector(s);let rows=[];
+$('#go').onclick=async()=>{rows=[];for(const l of $('#in').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean)){const U=l.toUpperCase();
+let m=U.match(/N2[\s-]*[0-9A-Z]{5}[\s-]*[0-9A-Z]{5}[\s-]*[0-9A-Z]{5}[\s-]*[0-9A-Z]{6}/),v=2;if(!m){m=U.match(/NOM[\s-]*[0-9A-Z]{4}[\s-]*[0-9A-Z]{4}[\s-]*[0-9A-Z]{5}/);v=1;}
+if(!m){rows.push({mat:l,v:'—',ok:false,motivo:'Sin código'});continue;}
+const mat=(U.replace(m[0],' ').split(/[\s,;\t]+/).map(LAB.normMat).filter(x=>x.length>=4))[0]||'';
+const r=v===2?await LAB.readCode2(m[0],mat):await LAB.readCode(m[0],mat);rows.push({mat,v,code:m[0].replace(/\s/g,''),...r});}
+$('#out tbody').innerHTML=rows.map(r=>`<tr><td class="mono">${LAB.esc(r.mat)}</td><td>${r.v}</td><td class="${r.ok?'y':'n'}">${r.ok?'✔':'✘ '+LAB.esc(r.motivo||'')}</td><td class="mono">${r.ok?r.score:''}</td><td class="mono">${r.ok?r.pct+'%':''}</td><td>${r.ok&&r.v===2?r.worlds+'/7':''}</td><td class="mono">${r.ok?LAB.fmtTime(r.time):''}</td><td class="${r.salidas>4?'w':''}">${r.ok&&r.v===2?r.salidas:''}</td><td class="mono">${r.ok&&r.v===2?LAB.fmtTime(r.fuera):''}</td><td class="${r.pegados>4?'w':''}">${r.ok&&r.v===2?r.pegados:''}</td><td>${r.ok&&r.v===2?r.copias:''}</td><td>${r.ok?r.date.toISOString().slice(0,10):''}</td></tr>`).join('');
+$('#out').classList.remove('hidden');$('#csv').disabled=!rows.length;};
+$('#csv').onclick=()=>{const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;const csv='﻿'+'matricula,version,valido,puntaje,aprov_pct,mundos,tiempo_s,salidas,tiempo_fuera_s,pegados,copias,fecha\n'+rows.map(r=>[r.mat,r.v,r.ok?'SI':'NO',r.score,r.pct,r.worlds,r.time,r.salidas,r.fuera,r.pegados,r.copias,r.ok?r.date.toISOString().slice(0,10):''].map(x=>q(r.ok?x:(x===r.mat||x===r.v||x==='NO'?x:''))).join(',')).join('\n');
+const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='verificacion_codigos.csv';a.click();};
+async function dl(path,name){$('#de').textContent='';try{const r=await fetch(path+'?key='+encodeURIComponent($('#k').value)+($('#g').value.trim()?'&grupo='+encodeURIComponent($('#g').value.trim()):''),{cache:'no-store'});
+if(r.status===401)return $('#de').textContent='Clave incorrecta.';if(!r.ok)throw new Error(r.status);const a=document.createElement('a');a.href=URL.createObjectURL(await r.blob());a.download=name;a.click();}catch(e){$('#de').textContent='No se pudo descargar ('+e.message+').';}}
+$('#d2').onclick=()=>dl('/api/v2/export','expedicion_nomenclatura.csv');$('#d1').onclick=()=>dl('/api/export','laboratorio_nomenclatura_v1.csv');})();</script></body></html>
