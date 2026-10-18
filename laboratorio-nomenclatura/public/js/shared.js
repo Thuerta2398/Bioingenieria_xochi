@@ -134,3 +134,7 @@
   }
   g.LAB.makeCode2 = makeCode2; g.LAB.readCode2 = readCode2;
 })(window);
+
+/* Servidor de ranking disponible solo fuera de GitHub Pages (GitHub sirve páginas estáticas) */
+window.LAB.SERVER = !/\.github\.io$/i.test(location.hostname);
+if (!window.LAB.SERVER) document.documentElement.classList.add('static');

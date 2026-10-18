@@ -96,3 +96,7 @@
 
   g.LAB = { fHTML, ionHTML, ROMAN, normMat, normGrupo, shortName, fmtTime, makeCode, readCode, shuffle, esc };
 })(window);
+
+/* Servidor de ranking disponible solo fuera de GitHub Pages (GitHub sirve páginas estáticas) */
+window.LAB.SERVER = !/\.github\.io$/i.test(location.hostname);
+if (!window.LAB.SERVER) document.documentElement.classList.add('static');

@@ -27,8 +27,9 @@ select{background:var(--panel);color:var(--ink);border:1px solid var(--line-2);b
 <p class="dim" style="font-size:.9rem;margin-top:18px">Top 10 · se actualiza cada 5 s · desempate: más mundos superados · <a href="./" id="lp" style="color:var(--ink-2)">Jugar →</a> · <a href="v1/ranking.html" style="color:var(--ink-3)">Ranking v1</a></p>
 </div>
 <script src="js/shared.js"></script>
+<script>if(!LAB.SERVER){document.addEventListener("DOMContentLoaded",()=>{});document.body.innerHTML='<div style="max-width:640px;margin:15vh auto;padding:16px;text-align:center;font-family:sans-serif"><h1>Ranking no disponible</h1><p>Esta versión se sirve desde GitHub Pages, que solo aloja páginas estáticas. Entrega tu constancia y tu código de evidencia en Blackboard.</p><p><a href="./" style="color:inherit">← Volver al juego</a></p></div>';throw new Error("sin servidor")}</script>
 <script>
-(function(){const $=s=>document.querySelector(s),p=new URLSearchParams(location.search);let g=p.get('grupo')?LAB.normGrupo(p.get('grupo')):'',prev={};
+(function(){if(!LAB.SERVER)return;const $=s=>document.querySelector(s),p=new URLSearchParams(location.search);let g=p.get('grupo')?LAB.normGrupo(p.get('grupo')):'',prev={};
 $('#fs').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{});
 async function groups(){try{const j=await(await fetch('/api/v2/ranking',{cache:'no-store'})).json();const gs=j.grupos||[];if(g&&!gs.find(x=>x.grupo===g))gs.unshift({grupo:g,participantes:0});if(!g&&gs.length)g=gs.sort((a,b)=>b.participantes-a.participantes)[0].grupo;
 $('#sel').innerHTML=gs.map(x=>`<option value="${LAB.esc(x.grupo)}" ${x.grupo===g?'selected':''}>${LAB.esc(x.grupo)} (${x.participantes})</option>`).join('')||'<option>Sin grupos aún</option>';}catch(e){}}

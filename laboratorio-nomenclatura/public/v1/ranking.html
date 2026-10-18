@@ -70,8 +70,9 @@ footer a{color:var(--ink2)}
   <footer><span>Top 10 · se actualiza cada 5 s · desempate por menor tiempo</span><a href="./" id="lnk-play">Jugar el reto →</a></footer>
 </div>
 <script src="js/shared.js"></script>
+<script>if(!LAB.SERVER){document.addEventListener("DOMContentLoaded",()=>{});document.body.innerHTML='<div style="max-width:640px;margin:15vh auto;padding:16px;text-align:center;font-family:sans-serif"><h1>Ranking no disponible</h1><p>Esta versión se sirve desde GitHub Pages, que solo aloja páginas estáticas. Entrega tu constancia y tu código de evidencia en Blackboard.</p><p><a href="./" style="color:inherit">← Volver al juego</a></p></div>';throw new Error("sin servidor")}</script>
 <script>
-(function(){
+(function(){if(!LAB.SERVER)return;
   const $=s=>document.querySelector(s);
   const p=new URLSearchParams(location.search);
   let grupo=p.get('grupo')?LAB.normGrupo(p.get('grupo')):'';

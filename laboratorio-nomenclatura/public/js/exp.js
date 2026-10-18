@@ -584,7 +584,7 @@
       <div class="card center" style="margin-top:12px"><b>Código de evidencia</b><br><div class="code2" id="rp-code">generando…</div>
         <p class="muted" style="font-size:.9rem">Sube a Blackboard la constancia PNG y este código. Incluye tu puntaje y tu registro de integridad, firmados con tu matrícula.</p>
         <p id="rp-rank" style="font-weight:700"></p>
-        <div class="next" style="justify-content:center"><button class="b gold" id="rp-png">⬇ Constancia PNG</button><button class="b" id="rp-copy">Copiar código</button><a class="b line" href="ranking.html?grupo=${encodeURIComponent(P.player.grupo)}">🏆 Ranking</a><button class="b line" id="rp-map">Mapa</button></div></div>`;
+        <div class="next" style="justify-content:center"><button class="b gold" id="rp-png">⬇ Constancia PNG</button><button class="b" id="rp-copy">Copiar código</button><a class="b line srv" href="ranking.html?grupo=${encodeURIComponent(P.player.grupo)}">🏆 Ranking</a><button class="b line" id="rp-map">Mapa</button></div></div>`;
     $('#rp-map').addEventListener('click', () => { renderMap(); show('map'); });
     show('rep');
     const code = await L.makeCode2({ score: t.score, pct: t.pct, time: P.active, worlds: t.passed, salidas: i.salidas, fuera: i.fuera, pegados: i.pegados, copias: i.copias, matricula: P.player.mat });
@@ -598,7 +598,9 @@
     submit();
   }
   async function submit() {
-    const el = $('#rp-rank'); el.textContent = 'Registrando en el ranking…'; el.style.color = '';
+    const el = $('#rp-rank');
+    if (!L.SERVER) { el.innerHTML = '📤 Entrega en Blackboard tu constancia PNG y este código: tu docente lo valida en el verificador.'; el.style.color = 'var(--amber)'; return; }
+    el.textContent = 'Registrando en el ranking…'; el.style.color = '';
     try {
       const r = await fetch('/api/v2/score', { method: 'POST', headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ nombre: P.player.nombre, matricula: P.player.mat, grupo: P.player.grupo, code: lastReport.code,

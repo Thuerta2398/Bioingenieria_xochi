@@ -239,3 +239,5 @@ a.btn{text-decoration:none;color:inherit}
 a.btn.primary{color:#fff}
 
 .tree-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+html.static .srv{display:none!important}

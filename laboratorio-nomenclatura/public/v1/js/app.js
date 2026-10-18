@@ -557,6 +557,7 @@
   }
   async function submitScore() {
     const msg = $('#f-rank');
+    if (!L.SERVER) { msg.textContent = 'Entrega en Blackboard tu constancia y este código: tu docente lo valida en el verificador.'; msg.style.color = 'var(--gold)'; return; }
     msg.textContent = 'Registrando en el ranking…'; msg.style.color = '';
     try {
       const r = await fetch('/api/score', {

@@ -1,6 +1,8 @@
 # Nomenclatura inorgánica interactiva · CEUX Composición de la Materia
 
-Sitio: https://laboratorio-nomenclatura-bio.netlify.app
+Sitio (GitHub Pages): https://thuerta2398.github.io/Bioingenieria_xochi/ → redirige a `laboratorio-nomenclatura/public/`.
+En GitHub Pages no hay servidor: el ranking y el CSV del servidor se ocultan solos; la evidencia es la constancia + el código firmado (se valida en `verificador.html`).
+Si se publica en Netlify (https://laboratorio-nomenclatura-bio.netlify.app) se activan ranking, registro y CSV.
 
 | Ruta | Qué es |
 |---|---|
